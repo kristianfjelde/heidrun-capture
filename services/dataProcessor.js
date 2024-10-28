@@ -1,12 +1,20 @@
 // services/dataProcessor.js
 const Device = require('../models/device');
 const Reading = require('../models/reading');
+const RawReading = require('../models/rawData');
+
 const { temperatureMappings, outputStatusMappings } = require('../config/deviceMappings');
-const previousDiscreteStates = {};
 
 async function processStatusData(statusData) {
   await processContinuousData(statusData);
   await processDiscreteData(statusData);
+
+  // Add more processing functions here as needed
+  try {
+    await RawReading.create(statusData);
+  } catch (error) {
+    console.debug('Error saving raw data:', error);
+  }
 }
 
 async function processContinuousData(statusData) {
@@ -27,6 +35,9 @@ async function processContinuousData(statusData) {
         unit: device.unit,
         dataType: device.dataType,
       }));
+
+      device.state = readingsToSave[readingsToSave.length - 1];
+      await device.save()
     } else {
       console.warn(`Device with serial number ${serialNumber} not found`);
     }
@@ -68,11 +79,6 @@ async function handleDiscreteState(serialNumber, currentState, readingsToSave) {
   const device = await Device.findOne({ serialNumber });
 
   if (device) {
-    const previousState = previousDiscreteStates[serialNumber];
-
-    if (currentState !== previousState) {
-      previousDiscreteStates[serialNumber] = currentState;
-
       readingsToSave.push(new Reading({
         device: device._id,
         time: new Date(),
@@ -80,7 +86,6 @@ async function handleDiscreteState(serialNumber, currentState, readingsToSave) {
         unit: device.unit, // Should be 'boolean' or appropriate unit
         dataType: device.dataType, // Should be 'state' or appropriate type
       }));
-    }
   } else {
     console.warn(`Device with serial number ${serialNumber} not found`);
   }
