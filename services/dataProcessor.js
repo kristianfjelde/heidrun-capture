@@ -11,7 +11,8 @@ async function processStatusData(statusData) {
 
   // Add more processing functions here as needed
   try {
-    await RawReading.create(statusData);
+    new RawReading({time: new Date(), data: statusData});
+    await RawReading.save();
   } catch (error) {
     console.debug('Error saving raw data:', error);
   }
