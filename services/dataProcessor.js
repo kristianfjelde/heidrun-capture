@@ -79,13 +79,17 @@ async function handleDiscreteState(serialNumber, currentState, readingsToSave) {
   const device = await Device.findOne({ serialNumber });
 
   if (device) {
-      readingsToSave.push(new Reading({
+      const readingToInsert = new Reading({
         device: device._id,
         time: new Date(),
         value: currentState,
         unit: device.unit, // Should be 'boolean' or appropriate unit
         dataType: device.dataType, // Should be 'state' or appropriate type
-      }));
+      })
+
+      device.state = readingToInsert;
+      await device.save();
+      readingsToSave.push(readingToInsert);
   } else {
     console.warn(`Device with serial number ${serialNumber} not found`);
   }
