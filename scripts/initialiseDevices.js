@@ -201,7 +201,7 @@ const devices = [
   },
   {
     serialNumber: 'HLT_VOLUME',
-    type: 'Volume',
+    type: 'PressureSensor',
     name: 'HLT Volume',
     dataType: DataTypes.VOLUME,
     unit: Units.LITERS,
