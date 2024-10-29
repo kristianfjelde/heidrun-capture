@@ -7,6 +7,10 @@ module.exports = {
     WortOut_Temperature: devices[15].serialNumber,
     Kettle_Temperature: devices[16].serialNumber,
     AUX1_Temperature: devices[17].serialNumber,
+    HLT_Setpoint: devices[18].serialNumber,
+    Mash_Setpoint: devices[19].serialNumber,
+    Kettle_Setpoint: devices[20].serialNumber,
+    HLT_Volume: devices[21].serialNumber,
   },
   outputStatusMappings: {
     heatElements: {

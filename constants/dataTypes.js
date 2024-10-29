@@ -4,6 +4,7 @@ const DataTypes = {
   LEVEL: 'level',
   STATE: 'state',
   PRESSURE: 'pressure',
+  VOLUME: 'volume',
 };
 
 const Units = {

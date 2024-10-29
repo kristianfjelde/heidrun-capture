@@ -17,7 +17,7 @@ const deviceSchema = new mongoose.Schema({
   modelNumber: String,
   type: {
     type: String,
-    enum: ['HeatingElement', 'TemperatureProbe', 'Pump', 'Valve'],
+    enum: ['HeatingElement', 'TemperatureProbe', 'Pump', 'Valve', 'Setpoint'],
     required: true,
   },
   name: String,

@@ -33,7 +33,12 @@ class BrewtrollerRepository {
             BTCMD_GetStatus().rspParams.forEach((param, i) => {
               status[param] = parsedData[i];
             });
-            resolve(status);
+
+            if(status['responseCode'] === code) {
+              resolve(status);
+            } else {
+              reject('Got empty status from brewtroller');
+            }
           });
         }).on('error', (err) => {
           reject(err);
@@ -88,9 +93,9 @@ class BrewtrollerRepository {
     ];
 
     // Modify some values to change slightly each time
-    sampleResponse[6] = (2175 + Math.floor(Math.random() * 5000)).toString(); // HLT_Temperature
-    sampleResponse[12] = (2193 + Math.floor(Math.random() * 5000)).toString(); // Mash_Temperature
-    sampleResponse[18] = (2200 + Math.floor(Math.random() * 5000)).toString(); // Kettle_Temperature
+    sampleResponse[6] = (2175 + Math.floor(Math.random() * 500)).toString(); // HLT_Temperature
+    sampleResponse[12] = (2193 + Math.floor(Math.random() * 500)).toString(); // Mash_Temperature
+    sampleResponse[18] = (2200 + Math.floor(Math.random() * 500)).toString(); // Kettle_Temperature
 
     // Modify outputStatus to simulate devices turning on/off
     sampleResponse[4] = Math.floor(Math.random() * 1024).toString(); // outputStatus
