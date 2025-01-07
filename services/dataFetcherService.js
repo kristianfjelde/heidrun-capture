@@ -1,15 +1,17 @@
 const brewRepository = require('../repositories/brewtrollerRepository');
 const dataProcessor = require('./dataProcessor');
+const queueService = require('./queueService');
 
 async function syncData(try_number = 0) {
   try {
     const statusData = await brewRepository.fetchStatus('a'); // 'a' is BTCMD_GetStatus code
-    await dataProcessor.processStatusData(statusData);
+    const processData = dataProcessor.processStatusData(statusData);
+    await queueService.send(processData);
   } catch (error) {
     console.warn('Error during data synchronization:', error);
     if(try_number > 3) return;
-    syncData(try_number += 1);
+    syncData(try_number + 1);
   }
-}
+
 
 module.exports = { syncData };

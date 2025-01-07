@@ -1,79 +1,43 @@
 // services/dataProcessor.js
-const Device = require('../models/device');
-const Reading = require('../models/reading');
-const RawReading = require('../models/rawData');
-
 const { temperatureMappings, outputStatusMappings } = require('../config/deviceMappings');
 
-async function processStatusData(statusData) {
-  await processContinuousData(statusData);
-  await processDiscreteData(statusData);
-
-  // Add more processing functions here as needed
-  try {
-    const rawReading = new RawReading({time: new Date(), data: statusData});
-    await rawReading.save();
-  } catch (error) {
-    console.debug('Error saving raw data:', error);
-  }
+function processStatusData(statusData) {
+  return {...processContinuousData(statusData), ...processDiscreteData(statusData)};
 }
 
-async function processContinuousData(statusData) {
-  const readingsToSave = [];
+function processContinuousData(statusData) {
+  const readingMap = {};
 
   for (const field in temperatureMappings) {
-    const serialNumber = temperatureMappings[field];
-    const value = statusData[field];
-
-    // Fetch the device by serial number
-    const device = await Device.findOne({ serialNumber });
-
-    if (device) {
-      readingsToSave.push(new Reading({
-        device: device._id,
-        time: new Date(),
-        value,
-        unit: device.unit,
-        dataType: device.dataType,
-      }));
-
-      device.state = readingsToSave[readingsToSave.length - 1];
-      await device.save()
-    } else {
-      console.warn(`Device with serial number ${serialNumber} not found`);
-    }
+    readingMap[field] = statusData[field];
   }
 
-  if (readingsToSave.length > 0) {
-    await Reading.insertMany(readingsToSave);
-  }
+  return readingMap;
 }
 
-async function processDiscreteData(statusData) {
+function processDiscreteData(statusData) {
   const parsedOutputStatus = parseOutputStatus(statusData.outputStatus);
-  const readingsToSave = [];
+  const readingMap = {};
 
   // Process heat elements
   for (const [bitIndex, serialNumber] of Object.entries(outputStatusMappings.heatElements)) {
     const isActive = parsedOutputStatus.heatElements.includes(parseInt(bitIndex));
-    await handleDiscreteState(serialNumber, isActive, readingsToSave);
+    readingMap[`Heater_${bitIndex}`] = isActive;
   }
 
   // Process pumps
   for (const [bitIndex, serialNumber] of Object.entries(outputStatusMappings.pumps)) {
     const isActive = parsedOutputStatus.pumps.includes(parseInt(bitIndex));
-    await handleDiscreteState(serialNumber, isActive, readingsToSave);
+    readingMap[`Pump_${bitIndex}`] = isActive;
   }
 
   // Process valves
   for (const [bitIndex, serialNumber] of Object.entries(outputStatusMappings.valves)) {
     const isActive = parsedOutputStatus.valves.includes(parseInt(bitIndex));
-    await handleDiscreteState(serialNumber, isActive, readingsToSave);
+    readingMap[`Valve_${bitIndex}`] = isActive;
   }
 
-  if (readingsToSave.length > 0) {
-    await Reading.insertMany(readingsToSave);
-  }
+  return readingMap;
 }
 
 async function handleDiscreteState(serialNumber, currentState, readingsToSave) {
