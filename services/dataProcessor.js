@@ -9,7 +9,7 @@ function processContinuousData(statusData) {
   const readingMap = {};
 
   for (const field in temperatureMappings) {
-    if (Number.isSafeInteger(statusData[field])) {
+    if (!Number.isNaN(statusData[field])) {
       readingMap[field] = parseInt(statusData[field], 10);
       continue;
     }
