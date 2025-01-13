@@ -9,9 +9,9 @@ async function syncData(try_number = 0) {
     await queueService.send(processData);
   } catch (error) {
     console.warn('Error during data synchronization:', error);
-    if(try_number > 3) return;
+    if (try_number > 3) return;
     syncData(try_number + 1);
   }
-
+}
 
 module.exports = { syncData };
