@@ -17,11 +17,12 @@ async function send(processData = {}) {
 
     const message = {
       payload,
-      deviceId: 'heidrun',
-      receivedDate: Date.now(),
+      external_id: 'heidrun',
+      time: Date.now(),
+      type: 'new_data'
     }
 
-    channel.sendToQueue(queueName, Buffer.from(message), { persistent: true });
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)), { persistent: true });
 
     console.log(`Message sent to queue "${queueName}":`, processData);
 
