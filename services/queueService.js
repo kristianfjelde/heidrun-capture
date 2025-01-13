@@ -13,10 +13,9 @@ async function send(processData = {}) {
     const channel = await connection.createChannel();
 
     await channel.assertQueue(queueName, { durable: true });
-    const payload = JSON.stringify(processData);
 
     const message = {
-      payload,
+      payload: processData,
       external_id: 'heidrun',
       time: Date.now(),
       type: 'new_data'
